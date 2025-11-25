@@ -467,7 +467,8 @@ def main():
     
     # Start bot
     print("Bot is running...")
-    application.run_polling()
+    application = Application.builder().token(TOKEN).build()
+
 
 if __name__ == '__main__':
     main()
