@@ -47,6 +47,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "🔄 /reset - Qaytadan boshidan sozlash\n"
             "❓ /help - Yordam"
         )
+        return ConversationHandler.END  # ADD THIS LINE
+    else:
+        await update.message.reply_text(
+            "Assalamu Alaikum! 🕌\n\n"
+            "Iltimos, qoldiq namozlaringiz sonini kiriting.\n\n"
+            "Birinchi navbatda Bomdod namozi qoldiq sonini kiriting:"
+        )
+        return SETUP_BOMDOD
+    """Start command handler"""
+    user_id = update.effective_user.id
+    
+    if is_setup_completed(user_id):
+        await update.message.reply_text(
+            "Assalamu Alaikum! 🕌\n\n"
+            "Botdan foydalanish:\n\n"
+            "📊 /status - Joriy qoldiq namozlar\n"
+            "➕ /add - Qoldiq namoz qo'shish\n"
+            "➖ /subtract - Qoldiq namozni ayirish\n"
+            "📜 /history - Oxirgi o'zgarishlar\n"
+            "🔄 /reset - Qaytadan boshidan sozlash\n"
+            "❓ /help - Yordam"
+        )
     else:
         await update.message.reply_text(
             "Assalamu Alaikum! 🕌\n\n"
@@ -416,6 +438,64 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 def main():
+    """Start the bot"""
+    # Initialize database
+    init_db()
+
+    # Create the bot application
+    application = Application.builder().token(TOKEN).build()
+
+    # Conversation handler for setup
+    setup_conv = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
+        states={
+            SETUP_BOMDOD: [MessageHandler(filters.TEXT & ~filters.COMMAND, setup_bomdod)],
+            SETUP_PESHIN: [MessageHandler(filters.TEXT & ~filters.COMMAND, setup_peshin)],
+            SETUP_ASR: [MessageHandler(filters.TEXT & ~filters.COMMAND, setup_asr)],
+            SETUP_SHOM: [MessageHandler(filters.TEXT & ~filters.COMMAND, setup_shom)],
+            SETUP_XUFTON: [MessageHandler(filters.TEXT & ~filters.COMMAND, setup_xufton)],
+            SETUP_VITR: [MessageHandler(filters.TEXT & ~filters.COMMAND, setup_vitr)],
+            CONFIRM_SETUP: [CallbackQueryHandler(confirm_setup)]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+
+    # Conversation handler for adding prayers
+    add_conv = ConversationHandler(
+        entry_points=[CommandHandler('add', add_start)],
+        states={
+            SELECT_PRAYER_ADD: [CallbackQueryHandler(add_select_prayer)],
+            ENTER_AMOUNT_ADD: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_enter_amount)]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+
+    # Conversation handler for subtracting prayers
+    subtract_conv = ConversationHandler(
+        entry_points=[CommandHandler('subtract', subtract_start)],
+        states={
+            SELECT_PRAYER_SUB: [CallbackQueryHandler(subtract_select_prayer)],
+            ENTER_AMOUNT_SUB: [MessageHandler(filters.TEXT & ~filters.COMMAND, subtract_enter_amount)]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+
+    # Add all handlers to the application
+    application.add_handler(setup_conv)
+    application.add_handler(add_conv)
+    application.add_handler(subtract_conv)
+    application.add_handler(CommandHandler("status", status))
+    application.add_handler(CommandHandler("history", history_command))
+    application.add_handler(CommandHandler("reset", reset_command))
+    application.add_handler(CommandHandler("help", help_command))
+
+    # Start the bot
+    print("Bot is running...")
+    application.run_polling()
+
+
+if __name__ == '__main__':
+    main()
     """Start the bot"""
     # Initialize database
     init_db()
