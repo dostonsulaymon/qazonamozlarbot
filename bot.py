@@ -13,9 +13,9 @@ from database import (
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-TOKEN = os.environ.get('BOT_TOKEN')
+TOKEN = os.environ.get('BOT_TOKEN_NAMOZ')
 if not TOKEN:
-    raise ValueError("BOT_TOKEN environment variable not set!")
+    raise ValueError("BOT_TOKEN_NAMOZ environment variable not set!")
 
 # Conversation states
 SETUP_BOMDOD, SETUP_PESHIN, SETUP_ASR, SETUP_SHOM, SETUP_XUFTON, SETUP_VITR, CONFIRM_SETUP = range(7)
